@@ -26,7 +26,7 @@ namespace chartTest
                 rnd[i] = new int[1000];
                 for (int j = 0; j < 1000; j++)
                 {
-                    rnd[i][j] = r.Next(10000);
+                    rnd[i][j] = r.Next(1000);
                 }
             }
 
@@ -70,7 +70,7 @@ namespace chartTest
 
             newChart.Name = chartName;
             newSeries.ChartArea = "ChartArea1";
-            newSeries.ChartType = SeriesChartType.Line;
+            newSeries.ChartType = SeriesChartType.Spline;
             newSeries.Legend = "Legend1";
             newSeries.Name = "Series1";
             newChart.Series.Add(newSeries);
@@ -93,6 +93,18 @@ namespace chartTest
 
                 chartsList[e.Index] = CreatChart("chart1", 0, 0, flowLayoutPanel1.Width, 100);
                 //add data to chart here
+                for (int i = 0; i < rnd[e.Index].Length; i++)
+                {
+                    chartsList[e.Index].Series[0].Points.Add(rnd[e.Index][i]);
+                }
+                chartsList[e.Index].ChartAreas[0].AxisX.ScaleView.Size = 30;
+                chartsList[e.Index].ChartAreas[0].AxisX.ScrollBar.ButtonStyle = ScrollBarButtonStyles.All;
+
+                chartsList[e.Index].Legends[0].Enabled = false;
+
+                chartsList[e.Index].ChartAreas[0].AxisX.MajorGrid.LineColor = System.Drawing.Color.Transparent;
+                chartsList[e.Index].ChartAreas[0].AxisY.MajorGrid.LineColor = System.Drawing.Color.Transparent;
+
                 chartsList[e.Index].Titles.Add(checkStr);
                 chartsList[e.Index].Titles[0].Text = checkStr;
 
@@ -131,6 +143,55 @@ namespace chartTest
                 featureCheckedListBox.SetItemChecked((int)i, false);
             }
             
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            textBox1.Width = Width / 2;
+        }
+
+
+        Timer timer1 = new Timer();
+        int endIndex = 0;
+        private void button1_Click(object sender, EventArgs e)
+        {
+            timer1.Tick += new EventHandler(RefreshChart);
+            timer1.Interval = 300;
+            timer1.Start();
+            
+        }
+
+        void RefreshChart(object sender, EventArgs e)
+        {
+            for (int i = 0; i < chartsList.Length; i++)
+            {
+                if (chartsList[i] != null)
+                {
+                    chartsList[i].ChartAreas[0].AxisX.ScaleView.Position = endIndex; //將視窗焦點維持在最新的點那邊
+                }
+            }
+
+            
+            
+            endIndex++;
+                
+            //動態調整Y軸
+            for (int i = 0; i < chartsList.Length; i++)
+            {
+                if (chartsList[i] != null)
+                {
+                    //chartsList[i].ChartAreas[0].AxisY.ScaleView.Zoom(startIndex, windowSize);
+                    chartsList[i].ChartAreas[0].AxisY.Maximum = rnd[i].Skip(endIndex).Take(endIndex+30).Max();
+                    chartsList[i].ChartAreas[0].AxisY.Minimum = rnd[i].Skip(endIndex).Take(endIndex + 30).Min();
+                }
+            }
+
+            
+        }
+
+        private void chart1_AxisViewChanged(object sender, ViewEventArgs e)
+        {
+
         }
     }
 }
